@@ -1,101 +1,163 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+
+const Home = () => {
+  const [transactions, setTransactions] = useState([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [balance, setBalance] = useState(0);
+
+  const addTransaction = (type, description, amount) => {
+    const id = transactions.length + 1;
+    const newTransaction = { id, type, description, amount };
+
+    setTransactions([...transactions, newTransaction]);
+
+    if (type === "Income") {
+      setTotalIncome(totalIncome + amount);
+      setBalance(balance + amount);
+    } else {
+      setTotalExpense(totalExpense + amount);
+      setBalance(balance - amount);
+    }
+  };
+
+  const handleDelete = (id) => {
+    const updatedTransactions = transactions.filter((txn) => txn.id !== id);
+    const deletedTransaction = transactions.find((txn) => txn.id === id);
+
+    if (deletedTransaction) {
+      if (deletedTransaction.type === "Income") {
+        setTotalIncome(totalIncome - deletedTransaction.amount);
+        setBalance(balance - deletedTransaction.amount);
+      } else {
+        setTotalExpense(totalExpense - deletedTransaction.amount);
+        setBalance(balance + deletedTransaction.amount);
+      }
+    }
+
+    setTransactions(updatedTransactions);
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-gray-300">
+      <div className="w-full max-w-md p-6 bg-gray-900 shadow-lg rounded-lg">
+        <h1 className="text-4xl font-bold text-center mb-6 text-gray-100">
+          Expense Tracker
+        </h1>
+        {/* Balance Section */}
+        <div className="mb-6 text-center">
+          <h2 className="text-3xl font-semibold text-gray-100">
+            Balance: ${balance}
+          </h2>
+          <div className="flex justify-between mt-3 text-lg">
+            <span className="text-green-500 font-medium">
+              Income: ${totalIncome}
+            </span>
+            <span className="text-red-500 font-medium">
+              Expense: ${totalExpense}
+            </span>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {/* Add Transaction Form */}
+        <TransactionForm addTransaction={addTransaction} />
+        {/* Transaction History */}
+        <TransactionList transactions={transactions} handleDelete={handleDelete} />
+      </div>
     </div>
   );
-}
+};
+
+const TransactionForm = ({ addTransaction }) => {
+  const [type, setType] = useState("Income");
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!description.trim() || amount === "" || amount <= 0) {
+      setError("All fields are required and amount must be greater than 0.");
+      return;
+    }
+
+    setError("");
+    addTransaction(type, description, Number(amount));
+    setDescription("");
+    setAmount("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-6">
+      <div className="mb-4">
+        <label className="block mb-2 text-sm text-gray-400">Type</label>
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="w-full border border-gray-700 bg-gray-800 text-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-600"
+        >
+          <option value="Income">Income</option>
+          <option value="Expense">Expense</option>
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2 text-sm text-gray-400">Description</label>
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full border border-gray-700 bg-gray-800 text-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-600"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block mb-2 text-sm text-gray-400">Amount</label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(Number(e.target.value))}
+          className="w-full border border-gray-700 bg-gray-800 text-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-600"
+        />
+      </div>
+      {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
+      <button
+        type="submit"
+        className="w-full bg-gray-700 text-gray-100 rounded-lg py-2 shadow-md hover:bg-gray-600 transition duration-300"
+      >
+        Add Transaction
+      </button>
+    </form>
+  );
+};
+
+const TransactionList = ({ transactions, handleDelete }) => (
+  <div>
+    <h2 className="text-xl font-semibold mb-4 text-gray-100">Transaction History</h2>
+    <ul className="space-y-3">
+      {transactions.map((txn) => (
+        <li
+          key={txn.id}
+          className="p-3 border border-gray-700 bg-gray-800 text-gray-300 rounded-lg flex justify-between items-center shadow-md hover:shadow-lg transition duration-300"
+        >
+          <span>{txn.description}</span>
+          <span
+            className={`${
+              txn.type === "Income" ? "text-green-500" : "text-red-500"
+            } font-medium`}
+          >
+            {txn.type === "Income" ? "+" : "-"}${txn.amount}
+          </span>
+          <button
+            onClick={() => handleDelete(txn.id)}
+            className="text-gray-500 hover:text-gray-400 transition"
+          >
+            ❌
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+export default Home;
